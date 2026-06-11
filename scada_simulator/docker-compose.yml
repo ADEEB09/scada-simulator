@@ -1,0 +1,89 @@
+version: "3.9"
+
+services:
+
+  # ─── Broker MQTT ────────────────────────────────────────────────────────
+  mosquitto:
+    image: eclipse-mosquitto:2.0
+    container_name: scada-broker
+    ports:
+      - "1883:1883"    # MQTT padrão
+      - "9001:9001"    # WebSocket (para clientes web)
+    volumes:
+      - ./mosquitto/mosquitto.conf:/mosquitto/config/mosquitto.conf:ro
+      - mosquitto_data:/mosquitto/data
+      - mosquitto_logs:/mosquitto/log
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "mosquitto_pub", "-h", "localhost", "-t", "health", "-m", "ok"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  # ─── Simulador SCADA ────────────────────────────────────────────────────
+  simulator:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: scada-simulator
+    depends_on:
+      mosquitto:
+        condition: service_healthy
+    environment:
+      MQTT_HOST: mosquitto
+      MQTT_PORT: "1883"
+      TELEMETRY_INTERVAL: "1.0"
+      LOG_LEVEL: INFO
+    restart: unless-stopped
+
+  # ─── Monitor MQTT (opcional — visualiza mensagens no terminal) ──────────
+  mqtt-monitor:
+    image: eclipse-mosquitto:2.0
+    container_name: scada-monitor
+    depends_on:
+      - mosquitto
+    entrypoint: >
+      mosquitto_sub -h mosquitto -t "scada/#" -v
+    profiles:
+      - monitor   # só sobe com: docker-compose --profile monitor up
+
+  scada-db:
+    image: timescale/timescaledb:latest-pg15
+    container_name: scada-db
+    environment:
+      POSTGRES_USER: scada_user
+      POSTGRES_PASSWORD: scada_password
+      POSTGRES_DB: scada_network
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    restart: unless-stopped
+
+  scada-backend:
+    build: ./backend
+    container_name: scada-backend
+    ports:
+      - "8000:8000"
+    environment:
+      - MQTT_BROKER=mosquitto
+      - DB_HOST=scada-db
+    depends_on:
+      - scada-db
+      - mosquitto
+    restart: unless-stopped
+
+  # Operator Interface Workspace Layout
+  scada-frontend:
+    build: ./scada-frontend
+    container_name: scada-frontend
+    ports:
+      - "5173:5173"
+    depends_on:
+      - scada-backend
+    restart: unless-stopped
+
+volumes:
+  mosquitto_data:
+  pgdata:
+  mosquitto_logs:
