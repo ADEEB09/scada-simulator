@@ -1,0 +1,56 @@
+{
+  "substation": {
+    "id": "SE-01",
+    "name": "Subestação Principal",
+    "nominal_voltage_kv": 13.8,
+    "measurement_id": "MED-01"
+  },
+  "feeders": [
+    {
+      "id": "AL-01",
+      "name": "Alimentador Norte",
+      "entry_switch": "CH-01",
+      "measurements": ["MED-02", "MED-03", "MED-04"],
+      "base_load_kw": 850
+    },
+    {
+      "id": "AL-02",
+      "name": "Alimentador Sul",
+      "entry_switch": "CH-03",
+      "measurements": ["MED-05", "MED-06", "MED-07"],
+      "base_load_kw": 620
+    },
+    {
+      "id": "AL-03",
+      "name": "Alimentador Leste",
+      "entry_switch": "CH-04",
+      "measurements": ["MED-08", "MED-09", "MED-10"],
+      "base_load_kw": 480
+    }
+  ],
+  "measurements": [
+    {"id": "MED-01", "name": "Saída Geral SE-01",    "feeder": null,  "position": "substation", "segment": 0},
+    {"id": "MED-02", "name": "Entrada AL-01",         "feeder": "AL-01", "position": "start",  "segment": 1},
+    {"id": "MED-03", "name": "Meio AL-01",            "feeder": "AL-01", "position": "middle", "segment": 2},
+    {"id": "MED-04", "name": "Fim AL-01",             "feeder": "AL-01", "position": "end",    "segment": 3},
+    {"id": "MED-05", "name": "Entrada AL-02",         "feeder": "AL-02", "position": "start",  "segment": 1},
+    {"id": "MED-06", "name": "Meio AL-02",            "feeder": "AL-02", "position": "middle", "segment": 2},
+    {"id": "MED-07", "name": "Fim AL-02",             "feeder": "AL-02", "position": "end",    "segment": 3},
+    {"id": "MED-08", "name": "Entrada AL-03",         "feeder": "AL-03", "position": "start",  "segment": 1},
+    {"id": "MED-09", "name": "Meio AL-03",            "feeder": "AL-03", "position": "middle", "segment": 2},
+    {"id": "MED-10", "name": "Fim AL-03",             "feeder": "AL-03", "position": "end",    "segment": 3}
+  ],
+  "switches": [
+    {"id": "CH-01", "name": "Chave Entrada AL-01",     "feeder": "AL-01", "type": "sectionalizer", "initial_state": "closed"},
+    {"id": "CH-02", "name": "Chave Meio AL-01",        "feeder": "AL-01", "type": "sectionalizer", "initial_state": "closed"},
+    {"id": "CH-03", "name": "Chave Entrada AL-02",     "feeder": "AL-02", "type": "sectionalizer", "initial_state": "closed"},
+    {"id": "CH-04", "name": "Chave Entrada AL-03",     "feeder": "AL-03", "type": "sectionalizer", "initial_state": "closed"},
+    {"id": "CH-05", "name": "Chave Interligação AL-01/AL-02", "feeder": null, "type": "tie",     "initial_state": "open"}
+  ],
+  "thresholds": {
+    "overvoltage_pu":    1.05,
+    "undervoltage_pu":   0.92,
+    "overcurrent_pu":    1.10,
+    "fault_current_pu":  5.00
+  }
+}
